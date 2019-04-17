@@ -7,13 +7,19 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
+          <name>job</name>
+          <description></description>
+          <defaultValue></defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>git</name>
           <description></description>
           <defaultValue></defaultValue>
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>job</name>
+          <name>giturl</name>
           <description></description>
           <defaultValue></defaultValue>
           <trim>true</trim>
@@ -27,66 +33,96 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <authToken>1234</authToken>
   <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
-    <hudson.tasks.Shell>
-      <command>echo &quot;&lt;?xml version=\&quot;1.0\&quot;?&gt;
+    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.72">
+      <scriptText>job(&quot;$job&quot;) {
+   label(&apos;node&apos;)
+	description()
+	keepDependencies(false)
+	scm {
+		git {
+			remote {
+                name(&apos;origin&apos;)
+                url(&quot;$giturl&quot;)
+          credentials(&quot;git&quot;)
+            }
+			branch(&quot;*/master&quot;)
+		}
+	}
+	disabled(false)
+	triggers {
+		scm(&quot;*/1 * * * *&quot;) {
+			ignorePostCommitHooks(false)
+		}
+	}
+	concurrentBuild(false)
+	steps {
+      
+      shell(&quot;&quot;&quot;echo &quot;&lt;?xml version=\\&quot;1.0\\&quot;?&gt;
 &lt;!-- THIS IS FOR GIT CLIENT ONLY
 This build file is a template Ant task that pulls sources from GIT.
 NOTE: Do not change the name of this file.
 GIT executable should be configued in the path of the system variables.
 --&gt;
-&lt;project default=\&quot;CheckOut\&quot; basedir=\&quot;.\&quot;&gt;
-&lt;echo&gt; Base dir is --- \${basedir} --- &lt;/echo&gt;
-&lt;macrodef name = \&quot;git\&quot;&gt;
-&lt;attribute name = \&quot;command\&quot; /&gt;
-&lt;attribute name = \&quot;dir\&quot; default = \&quot;\&quot; /&gt;
-&lt;element name = \&quot;args\&quot; optional = \&quot;true\&quot; /&gt;
+&lt;project default=\\&quot;CheckOut\\&quot; basedir=\\&quot;.\\&quot;&gt;
+&lt;echo&gt; Base dir is --- \\\${basedir} --- &lt;/echo&gt;
+&lt;macrodef name = \\&quot;git\\&quot;&gt;
+&lt;attribute name = \\&quot;command\\&quot; /&gt;
+&lt;attribute name = \\&quot;dir\\&quot; default = \\&quot;\\&quot; /&gt;
+&lt;element name = \\&quot;args\\&quot; optional = \\&quot;true\\&quot; /&gt;
 &lt;sequential&gt;
-&lt;echo message = \&quot;git @{command}\&quot; /&gt;
-&lt;exec executable = \&quot;git\&quot; dir = \&quot;@{dir}\&quot;&gt;
-&lt;arg value = \&quot;@{command}\&quot; /&gt;
+&lt;echo message = \\&quot;git @{command}\\&quot; /&gt;
+&lt;exec executable = \\&quot;git\\&quot; dir = \\&quot;@{dir}\\&quot;&gt;
+&lt;arg value = \\&quot;@{command}\\&quot; /&gt;
 &lt;args/&gt;
 &lt;/exec&gt;
 &lt;/sequential&gt;
 &lt;/macrodef&gt;
-&lt;macrodef name = \&quot;git-clone-pull\&quot;&gt;
-&lt;attribute name = \&quot;repository\&quot; /&gt;
-&lt;attribute name = \&quot;dest\&quot; /&gt;
+&lt;macrodef name = \\&quot;git-clone-pull\\&quot;&gt;
+&lt;attribute name = \\&quot;repository\\&quot; /&gt;
+&lt;attribute name = \\&quot;dest\\&quot; /&gt;
 &lt;sequential&gt;
-&lt;git command = \&quot;clone\&quot;&gt;
+&lt;git command = \\&quot;clone\\&quot;&gt;
 &lt;args&gt;
-&lt;arg value = \&quot;@{repository}\&quot; /&gt;
-&lt;arg value = \&quot;@{dest}\&quot; /&gt;
+&lt;arg value = \\&quot;@{repository}\\&quot; /&gt;
+&lt;arg value = \\&quot;@{dest}\\&quot; /&gt;
 &lt;/args&gt;
 &lt;/git&gt;
-&lt;git command = \&quot;pull\&quot; dir = \&quot;@{dest}\&quot; /&gt;
+&lt;git command = \\&quot;pull\\&quot; dir = \\&quot;@{dest}\\&quot; /&gt;
 &lt;/sequential&gt;
 &lt;/macrodef&gt;
 &lt;if&gt;
-&lt;equals arg1=\&quot;\${build.checkout.dir}\&quot; arg2=\&quot;\&quot; /&gt;
+&lt;equals arg1=\\&quot;\\\${build.checkout.dir}\\&quot; arg2=\\&quot;\\&quot; /&gt;
 &lt;then&gt;
-&lt;fail&gt;Please set \&quot;build.checkout.dir\&quot; property. &lt;/fail&gt;
+&lt;fail&gt;Please set \\&quot;build.checkout.dir\\&quot; property. &lt;/fail&gt;
 &lt;/then&gt;
 &lt;/if&gt;
-&lt;target name=\&quot;CheckOut\&quot; depends=\&quot;clean\&quot; description=\&quot;pull out all the sources from version control\&quot;&gt;
-&lt;git command = \&quot;clone\&quot;&gt;
+&lt;target name=\\&quot;CheckOut\\&quot; depends=\\&quot;clean\\&quot; description=\\&quot;pull out all the sources from version control\\&quot;&gt;
+&lt;git command = \\&quot;clone\\&quot;&gt;
 &lt;args&gt;
-&lt;arg value = \&quot;$git\&quot; /&gt;
-&lt;arg value = \&quot;/opt/abe/svncheckout/IS\&quot; /&gt;
+&lt;arg value = \\&quot;$git\\&quot; /&gt;
+&lt;arg value = \\&quot;/opt/abe/svncheckout/IS\\&quot; /&gt;
 &lt;/args&gt;
 &lt;/git&gt;
-&lt;git command = \&quot;pull\&quot; dir = \&quot;/opt/abe/svncheckout/IS\&quot; /&gt;
+&lt;git command = \\&quot;pull\\&quot; dir = \\&quot;/opt/abe/svncheckout/IS\\&quot; /&gt;
 &lt;/target&gt;
-&lt;target name=\&quot;clean\&quot; description=\&quot;Clean up the checkout directory\&quot; &gt;
-&lt;delete dir=\&quot;\${build.checkout.dir}\&quot;/&gt;
+&lt;target name=\\&quot;clean\\&quot; description=\\&quot;Clean up the checkout directory\\&quot; &gt;
+&lt;delete dir=\\&quot;\\\${build.checkout.dir}\\&quot;/&gt;
 &lt;/target&gt;
-&lt;/project&gt; &quot; &gt; /opt/softwareag/common/AssetBuildEnvironment/master_build/build-source-checkout.xml</command>
-    </hudson.tasks.Shell>
-    <hudson.tasks.Shell>
-      <command>
-echo &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot; standalone=\&quot;no\&quot;?&gt;&lt;DeployerSpec exitOnError=\&quot;true\&quot; sourceType=\&quot;Repository\&quot;&gt;
+&lt;/project&gt; &quot; &gt; /opt/softwareag/common/AssetBuildEnvironment/master_build/build-source-checkout.xml&quot;&quot;&quot;)
+		
+		shell(&quot;&quot;&quot;rm -rf /opt/abe/build;
+rm -rf /opt/abe/svncheckout/IS;
+
+for i in `ls`
+do 
+
+if [ -d \$i -a &quot;logs&quot; != \$i ]; then
+
+echo &quot;&lt;?xml version=\\&quot;1.0\\&quot; encoding=\\&quot;UTF-8\\&quot; standalone=\\&quot;no\\&quot;?&gt;&lt;DeployerSpec exitOnError=\\&quot;true\\&quot; sourceType=\\&quot;Repository\\&quot;&gt;
         &lt;DeployerServer&gt;
                 &lt;host&gt;localhost:5555&lt;/host&gt;
                 &lt;user&gt;Administrator&lt;/user&gt;
@@ -94,7 +130,7 @@ echo &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot; stand
         &lt;/DeployerServer&gt;
   &lt;Environment&gt;
                 &lt;IS&gt;
-                        &lt;isalias name=\&quot;RepoISTarget\&quot;&gt;
+                        &lt;isalias name=\\&quot;RepoISTarget\\&quot;&gt;
                                 &lt;host&gt;localhost&lt;/host&gt;
                                 &lt;port&gt;5555&lt;/port&gt;
                                 &lt;user&gt;Administrator&lt;/user&gt;
@@ -103,7 +139,7 @@ echo &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot; stand
                                 &lt;installDeployerResource&gt;true&lt;/installDeployerResource&gt;
                                 &lt;Test&gt;false&lt;/Test&gt;
                         &lt;/isalias&gt;
-                        &lt;isalias name=\&quot;RepoISTargetForLogicalServer\&quot;&gt;
+                        &lt;isalias name=\\&quot;RepoISTargetForLogicalServer\\&quot;&gt;
                                 &lt;host&gt;localhost&lt;/host&gt;
                                 &lt;port&gt;5555&lt;/port&gt;
                                 &lt;user&gt;Administrator&lt;/user&gt;
@@ -114,61 +150,36 @@ echo &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot; stand
                         &lt;/isalias&gt;
                 &lt;/IS&gt;
                 &lt;Repository&gt;
-                        &lt;repalias name=\&quot;$job\&quot;&gt;
+                        &lt;repalias name=\\&quot;test\\&quot;&gt;
                                 &lt;type&gt;FlatFile&lt;/type&gt;
                                 &lt;urlOrDirectory&gt;/opt/abe/build&lt;/urlOrDirectory&gt;
                                 &lt;Test&gt;false&lt;/Test&gt;
                         &lt;/repalias&gt;
                 &lt;/Repository&gt;
         &lt;/Environment&gt;
-        &lt;Projects projectPrefix=\&quot;ACDL_\&quot;&gt;
-                &lt;Project description=\&quot;\&quot; ignoreMissingDependencies=\&quot;true\&quot; name=\&quot;cloud\&quot; overwrite=\&quot;true\&quot; type=\&quot;Repository\&quot;&gt;
-                        &lt;DeploymentSet autoResolve=\&quot;full\&quot; description=\&quot;\&quot; name=\&quot;myDeploymentSet\&quot; srcAlias=\&quot;$job\&quot;&gt;
-                                &lt;Composite name=\&quot;$i\&quot; srcAlias=\&quot;$job\&quot; type=\&quot;IS\&quot;/&gt;
+        &lt;Projects projectPrefix=\\&quot;ACDL_\\&quot;&gt;
+                &lt;Project description=\\&quot;\\&quot; ignoreMissingDependencies=\\&quot;true\\&quot; name=\\&quot;SAMPLE\\&quot; overwrite=\\&quot;true\\&quot; type=\\&quot;Repository\\&quot;&gt;
+                        &lt;DeploymentSet autoResolve=\\&quot;full\\&quot; description=\\&quot;\\&quot; name=\\&quot;myDeploymentSet\\&quot; srcAlias=\\&quot;test\\&quot;&gt;
+                                &lt;Composite name=\\&quot;\$i\\&quot; srcAlias=\\&quot;test\\&quot; type=\\&quot;IS\\&quot;/&gt;
                         &lt;/DeploymentSet&gt;
-                        &lt;DeploymentMap description=\&quot;\&quot; name=\&quot;myDeploymentMap\&quot;/&gt;
-                        &lt;MapSetMapping mapName=\&quot;myDeploymentMap\&quot; setName=\&quot;myDeploymentSet\&quot;&gt;
-                                &lt;alias type=\&quot;IS\&quot;&gt;test&lt;/alias&gt;
+                        &lt;DeploymentMap description=\\&quot;\\&quot; name=\\&quot;myDeploymentMap\\&quot;/&gt;
+                        &lt;MapSetMapping mapName=\\&quot;myDeploymentMap\\&quot; setName=\\&quot;myDeploymentSet\\&quot;&gt;
+                                &lt;alias type=\\&quot;IS\\&quot;&gt;test&lt;/alias&gt;
                         &lt;/MapSetMapping&gt;
-                        &lt;DeploymentCandidate description=\&quot;\&quot; mapName=\&quot;myDeploymentMap\&quot; name=\&quot;myDeployment1\&quot;/&gt;
+                        &lt;DeploymentCandidate description=\\&quot;\\&quot; mapName=\\&quot;myDeploymentMap\\&quot; name=\\&quot;myDeployment1\\&quot;/&gt;
                 &lt;/Project&gt;
         &lt;/Projects&gt;
         &lt;/DeployerSpec&gt;&quot;  &gt; /opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/config/ProjectAutomatorSampleForRepository.xml
         
-     </command>
-    </hudson.tasks.Shell>
-    <javaposse.jobdsl.plugin.ExecuteDslScripts plugin="job-dsl@1.72">
-      <scriptText>job(&quot;$job&quot;) {
-  
-    label(&apos;node&apos;)
-    scm {
-      git {
-        remote {
-                name(&apos;origin&apos;)
-                url(&quot;$git&quot;)
-          credentials(&quot;git&quot;)
-            }
-    }
-    }
-     triggers {
-        scm(&apos;*/1 * * * *&apos;)
-    }
-steps {
-        
-        shell(&quot;/opt/softwareag/common/AssetBuildEnvironment/bin/build.sh&quot;)
-  
-        shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/projectautomatorUnix.sh /opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/config/ProjectAutomatorSampleForRepository.xml&quot;)
+     
+fi
 
-              
-        shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/Deployer.sh --checkpoint -project ACDL_cloud -dc myDeployment1 -host 5.231.106.118 -port 5555 -user Administrator -pwd manage&quot;)
-
-              
-              
-        shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/Deployer.sh --deploy -project ACDL_cloud -dc myDeployment1 -host 5.231.106.118 -port 5555 -user Administrator -pwd manage&quot;)
-
-                   
-        
-              }    
+done&quot;&quot;&quot;)
+		shell(&quot;/opt/softwareag/common/AssetBuildEnvironment/bin/build.sh&quot;)
+		shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/projectautomatorUnix.sh /opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/config/ProjectAutomatorSampleForRepository.xml&quot;)
+		shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/Deployer.sh --checkpoint -project ACDL_SAMPLE -dc myDeployment1 -host localhost -port 5555 -user Administrator -pwd manage&quot;)
+		shell(&quot;/opt/softwareag/IntegrationServer/instances/default/packages/WmDeployer/bin/Deployer.sh --deploy -project ACDL_SAMPLE -dc myDeployment1 -host localhost -port 5555 -user Administrator -pwd manage&quot;)
+	}
 }</scriptText>
       <usingScriptText>true</usingScriptText>
       <sandbox>false</sandbox>
